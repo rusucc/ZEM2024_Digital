@@ -61,6 +61,8 @@ inline double calculatePID(int currentPosition, int targetPosition){
     //Serial.println(error);
     float P = KP*error;
     I += KI*error;
+    if(I>max_integral) I = max_integral;
+    if(I<min_integral) I = min_integral;
     if(error*old_error<=0) I = 0;
     D = KD*(error-old_error);
     old_error = error;
