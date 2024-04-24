@@ -17,6 +17,8 @@ const int left_vl53_xshut = 30; //digital only
 const int right_vl53_xshut = 31; //digital only
 const int extra_sensor_1 = 11; //pwm, 5v
 const int extra_sensor_2 = 12;  //pwm, 5v
+const int scl = A5, sda = A4; // pinii de i2c, analog, au si pwm
+const int analogSuplimentar_A6 = A6;
+const int analogSuplimentar_A7 = A7; //trebuie lipiti
 // bluetooth pe rx1/tx1
-//a4,a5 i2c
 #endif

@@ -8,25 +8,31 @@ float error=0, old_error=0,P=0;
 float I=0,D=0;
 
 inline void sendPWM_left(int left_pwm=0, bool left_forward=true){
-    if(left_pwm<0) left_pwm = 0;
+    if(left_pwm<-255) left_pwm = -255;
     else if(left_pwm>255) left_pwm = 255;
-    if(left_forward) analogWrite(left_1,left_pwm),digitalWrite(left_2,0);
-    else analogWrite(left_2,left_pwm),digitalWrite(left_1,left_pwm);
+    if (left_pwm < 0) left_forward = false;
+    else left_forward = true;
+    left_pwm = abs(left_pwm);
+    if(left_forward) analogWrite(left_1,left_pwm),analogWrite(left_2,0);
+    else analogWrite(left_2,left_pwm),analogWrite(left_1,0);
 }
 inline void sendPWM_right(int right_pwm=0, bool right_forward=true){
-    if(right_pwm<0) right_pwm = 0;
+    if(right_pwm<-255) right_pwm = -255;
     else if(right_pwm>255) right_pwm = 255;
-    if(right_forward) analogWrite(right_1,right_pwm),digitalWrite(right_2,0);
-    else analogWrite(right_2,right_pwm),digitalWrite(right_1,right_pwm);
+    if (right_pwm < 0) right_forward = false;
+    else right_forward = true;
+    right_pwm = abs(right_pwm);
+    if(right_forward) analogWrite(right_1,right_pwm),analogWrite(right_2,0);
+    else analogWrite(right_2,right_pwm),analogWrite(right_1,0);
 }
 inline void read_sensors(){
     line = false;
     for(int i=0; i<number_sensors;i++){
         values[i] = digitalRead(sensor_pins[i]);
-        if (values[i]){
+        if (values[i] and i!=0 and i!=9){
             line = true;
+            number_read++;
         }
-        
     }
 }
 inline void calculatePosition(){
@@ -36,7 +42,7 @@ inline void calculatePosition(){
         if (values[i]){
             sum++;
             number_read++;
-            w_avg += (i*10) * values[i];
+            w_avg += ((i-1)*10) * values[i];
         }
         
     }
@@ -52,7 +58,8 @@ inline void calculatePosition(){
 }
 inline double calculatePID(int currentPosition, int targetPosition){
     error = currentPosition-targetPosition;
-    int P = KP*error;
+    //Serial.println(error);
+    float P = KP*error;
     I += KI*error;
     if(error*old_error<=0) I = 0;
     D = KD*(error-old_error);
@@ -62,7 +69,7 @@ inline double calculatePID(int currentPosition, int targetPosition){
 inline void follow_line(){
   read_sensors();
   calculatePosition();
-  int outpid = calculatePID(position,3500);
+  int outpid = calculatePID(position,35);
   sendPWM_left(basePWM-outpid);
   sendPWM_right(basePWM+outpid);
   delay(10);
@@ -71,6 +78,15 @@ inline void resetPID(){
     I = 0;
     error = 0;
     old_error = 0;
+}
+inline int readMagnetic(int pin){
+    return digitalRead(pin);
+}
+inline int readSharp(int pin){
+    int raw = analogRead(pin);
+    float Vout = float(raw) * 0.0048828125; 
+ 	int phys = 13 * pow(Vout, -1); 
+ 	return phys;
 }
 inline void led1on(){
     digitalWrite(led1,HIGH);
