@@ -1,6 +1,6 @@
 #ifndef CONSTANTE_h
 #define CONSTANTE_h
-const int basePWM=60,KP = 3.65,KI = 0.0071,KD = 4.7;
+const int basePWM=64,KP = 3.65,KI = 0.0071,KD = 4.7;
 const int turnPWM=40;
 const int forward_pwm = 40;
 
