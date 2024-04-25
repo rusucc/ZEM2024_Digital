@@ -26,10 +26,11 @@ inline void sendPWM_right(int right_pwm=0, bool right_forward=true){
     else analogWrite(right_2,right_pwm),analogWrite(right_1,0);
 }
 inline void read_sensors(){
+    number_read = 0;
     line = false;
     for(int i=0; i<number_sensors;i++){
         values[i] = digitalRead(sensor_pins[i]);
-        if (values[i] and i!=0 and i!=9){
+        if ((values[i]==1) and (i!=0) and (i!=9)){
             line = true;
             number_read++;
         }
@@ -37,11 +38,9 @@ inline void read_sensors(){
 }
 inline void calculatePosition(){
     int sum=0,w_avg=0;
-    number_read = 0;
     for(int i=1;i<number_sensors-1;i++){
         if (values[i]){
             sum++;
-            number_read++;
             w_avg += ((i-1)*10) * values[i];
         }
         
@@ -68,12 +67,12 @@ inline double calculatePID(int currentPosition, int targetPosition){
     old_error = error;
     return P+I+D;
 }
-inline void follow_line(){
+inline void follow_line(int pwm){
   read_sensors();
   calculatePosition();
   int outpid = calculatePID(position,35);
-  sendPWM_left(basePWM-outpid);
-  sendPWM_right(basePWM+outpid);
+  sendPWM_left(pwm-outpid);
+  sendPWM_right(pwm+outpid);
   delay(10);
 }
 inline void resetPID(){
@@ -89,6 +88,13 @@ inline int readSharp(int pin){
     float Vout = float(raw) * 0.0048828125; 
  	int phys = 13 * pow(Vout, -1); 
  	return phys;
+}
+inline void stop(){
+    while(true) analogWrite(left_1,0),analogWrite(left_2,0),analogWrite(right_1,0),analogWrite(right_2,0);
+}
+inline void printSensorValues(){
+    for(int i=0;i<number_sensors;i++) Serial.printf("%d:%d ",i,values[i]);
+    Serial.println(number_read);
 }
 inline void led1on(){
     digitalWrite(led1,HIGH);
